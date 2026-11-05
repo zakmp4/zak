@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zak — Games</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home">
+  <header id="site-header"></header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Games by <span data-site-name></span></p>
+        <h1>I make games.<br>You chase the <em>high score.</em></h1>
+        <p class="lead">Quick browser games you can play right here. Post a score, climb the leaderboard, and tell me what to build next.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="games.html"><span data-icon="play"></span>Play now</a>
+          <a class="btn btn-ghost" href="ideas.html">Suggest a game</a>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="scores-head">
+          <span>Top scores</span>
+          <span class="mono">this week</span>
+        </div>
+        <ol class="score-list" id="top-scores"></ol>
+        <div class="scores-foot" id="scores-foot">No scores yet. The first one gets the crown.</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="num" id="stat-games">0</div><div class="lbl">games made</div></div>
+      <div class="stat"><div class="num" id="stat-scores">0</div><div class="lbl">scores posted</div></div>
+      <div class="stat"><div class="num" id="stat-players">0</div><div class="lbl">players</div></div>
+    </div>
+
+    <section>
+      <div class="sec-head">
+        <h2>Games</h2>
+        <a href="games.html">See all →</a>
+      </div>
+      <div class="tiles" id="games"></div>
+    </section>
+
+    <section>
+      <div class="band">
+        <div>
+          <h2>Got a game idea?</h2>
+          <p>Post it on the ideas board. The most-voted idea gets built next.</p>
+        </div>
+        <a class="btn btn-primary" href="ideas.html"><span data-icon="idea"></span>Open ideas board</a>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    document.getElementById("games").innerHTML =
+      GAMES.slice(0, 3).map((g) => gameTile(g)).join("") + suggestTile();
+
+    document.getElementById("stat-games").textContent = GAMES.filter((g) => g.status === "live").length;
+    document.title = `${SITE.name} — Games`;
+
+    const rank = (n) => `<span class="rank">${String(n).padStart(2, "0")}</span>`;
+    function showScores(rows) {
+      const list = [];
+      for (let i = 0; i < 5; i++) {
+        const r = rows[i];
+        list.push(r
+          ? `<li>${rank(i + 1)}<span>${escapeHTML(r.name)}</span><span class="val">${formatScore(r.game, r.score)}</span></li>`
+          : `<li>${rank(i + 1)}<span class="blank">———</span><span class="val blank">0</span></li>`);
+      }
+      document.getElementById("top-scores").innerHTML = list.join("");
+    }
+    showScores([]);
+
+    if (DB.enabled) {
+      DB.topScores({ limit: 5, thisWeek: true }).then((rows) => {
+        showScores(rows);
+        if (rows.length) {
+          const top = GAMES.find((g) => g.id === rows[0].game);
+          document.getElementById("scores-foot").innerHTML =
+            `${escapeHTML(rows[0].name)} leads${top ? ` in ${top.title}` : ""}. <a class="accent" href="leaderboard.html">Full leaderboard →</a>`;
+        }
+      }).catch(console.error);
+      DB.countScores().then((n) => (document.getElementById("stat-scores").textContent = n)).catch(console.error);
+      DB.countPlayers().then((n) => (document.getElementById("stat-players").textContent = n)).catch(console.error);
+    }
+  </script>
+</body>
+</html>

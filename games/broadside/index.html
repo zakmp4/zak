@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Broadside</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body data-page="games" data-root="../../">
+  <header id="site-header"></header>
+
+  <main>
+    <div class="game-head">
+      <a class="back" href="../../games.html">← All games</a>
+      <h1>Broadside</h1>
+      <p>The ship next to you won't stop firing. Dodge the shells and last as long as you can.</p>
+    </div>
+
+    <div class="game-frame">
+      <canvas id="game" width="320" height="180" tabindex="0" aria-label="Broadside game"></canvas>
+
+      <button class="mute" id="btn-mute" aria-label="Sound on">
+        <svg class="icon on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+        <svg class="icon off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>
+      </button>
+
+      <div class="overlay" id="ov-start">
+        <h2>Broadside</h2>
+        <p>One hit and you're done. No warnings: watch the shadows on the deck.<br>New attacks join in the longer you last.</p>
+        <button class="btn btn-primary" id="btn-start">Set sail</button>
+        <p class="hint">Best: <span data-best>—</span></p>
+      </div>
+
+      <div class="overlay hidden" id="ov-pause">
+        <h2>Paused</h2>
+        <button class="btn btn-primary" id="btn-resume">Keep going</button>
+      </div>
+
+      <div class="overlay hidden" id="ov-over">
+        <p class="kicker">Direct hit</p>
+        <h2>You lasted <span id="final-time" class="accent">0.0s</span></h2>
+        <p id="new-best" class="new-best hidden">New personal best!</p>
+        <p class="hint">Your best: <span data-best>—</span></p>
+        <form class="post-score hidden" id="post-form" data-game="broadside">
+          <input id="player-name" maxlength="16" placeholder="Your name" autocomplete="nickname" aria-label="Your name">
+          <button class="btn btn-primary" type="submit">Post score</button>
+        </form>
+        <p class="hint post-status" id="post-status"></p>
+        <div class="actions">
+          <button class="btn btn-ghost" id="btn-again">Play again</button>
+          <a class="btn btn-ghost" href="../../games.html">Other games</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-controls">
+      <span><kbd>WASD</kbd> or <kbd>←↑↓→</kbd> move</span>
+      <span><kbd>P</kbd> pause</span>
+      <span>On a phone: drag on the game to move</span>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="../../js/config.js"></script>
+  <script src="../../js/site.js"></script>
+  <script src="../../js/db.js"></script>
+  <script src="game.js"></script>
+  <script src="../../js/post-score.js"></script>
+</body>
+</html>

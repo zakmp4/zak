@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="leaderboard">
+  <header id="site-header"></header>
+
+  <main>
+    <div class="page-head">
+      <h1>Leaderboard</h1>
+      <p>Top scores from every game.</p>
+    </div>
+
+    <div class="board-controls">
+      <div class="seg" id="game-tabs"></div>
+      <div class="seg" id="range-tabs">
+        <button data-range="all" class="on">All time</button>
+        <button data-range="week">This week</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <table class="board">
+        <thead><tr><th>Rank</th><th>Player</th><th>Score</th><th>When</th></tr></thead>
+        <tbody id="scores">
+          <tr><td class="empty" colspan="4">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer id="site-footer"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/db.js"></script>
+  <script>
+    const games = GAMES.filter((g) => g.status === "live");
+    const params = new URLSearchParams(location.search);
+    let game = games.some((g) => g.id === params.get("game")) ? params.get("game") : games[0]?.id;
+    let range = "all";
+
+    const tabs = document.getElementById("game-tabs");
+    tabs.innerHTML = games.map((g) => `<button data-game="${g.id}">${g.title}</button>`).join("");
+
+    function ago(iso) {
+      const s = (Date.now() - new Date(iso)) / 1000;
+      if (s < 60) return "just now";
+      if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+      if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+      return `${Math.floor(s / 86400)}d ago`;
+    }
+
+    async function load() {
+      tabs.querySelectorAll("button").forEach((b) => b.classList.toggle("on", b.dataset.game === game));
+      document.querySelectorAll("#range-tabs button").forEach((b) => b.classList.toggle("on", b.dataset.range === range));
+      const body = document.getElementById("scores");
+      const msg = (t) => (body.innerHTML = `<tr><td class="empty" colspan="4">${t}</td></tr>`);
+
+      if (!DB.enabled) return msg("The online leaderboard isn't connected yet.");
+      msg("Loading...");
+      try {
+        const rows = await DB.topScores({ game, limit: 50, thisWeek: range === "week" });
+        if (!rows.length) return msg(range === "week" ? "No scores this week yet. Go set one!" : "No scores yet. Be the first!");
+        body.innerHTML = rows
+          .map((r, i) => `<tr>
+            <td class="num">${String(i + 1).padStart(2, "0")}</td>
+            <td>${escapeHTML(r.name)}</td>
+            <td class="num">${formatScore(r.game, r.score)}</td>
+            <td class="when">${ago(r.created_at)}</td>
+          </tr>`)
+          .join("");
+      } catch (err) {
+        console.error(err);
+        msg("Couldn't load scores. Try refreshing.");
+      }
+    }
+
+    tabs.addEventListener("click", (e) => { if (e.target.dataset.game) { game = e.target.dataset.game; load(); } });
+    document.getElementById("range-tabs").addEventListener("click", (e) => { if (e.target.dataset.range) { range = e.target.dataset.range; load(); } });
+    load();
+  </script>
+</body>
+</html>
